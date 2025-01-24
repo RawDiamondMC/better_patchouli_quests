@@ -1,0 +1,73 @@
+import com.diffplug.spotless.LineEnding
+
+plugins {
+    id 'fabric-loom' version '1.10.0-alpha.9'
+    id 'com.diffplug.spotless' version '7.0.2'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/better_patchouli_quests.accesswidener")
+}
+
+repositories {
+    maven {
+        url = 'https://maven.blamejared.com'
+    }
+    maven {
+        url = 'http://maven.snowlyicewolf.club/'
+        allowInsecureProtocol = true
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    modImplementation "vazkii.patchouli:Patchouli:1.21-87-FABRIC"
+    implementation "club.someoneice.json:amarok-json-for-java:1.7.3"
+    include("club.someoneice.json:amarok-json-for-java:1.7.3")
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+    from("LICENSE")
+}
+
+spotless {
+    lineEndings = LineEnding.UNIX
+    java {
+        removeUnusedImports()
+        importOrder('java', 'javax', '', 'net.minecraft', 'net.fabricmc')
+        trimTrailingWhitespace()
+        leadingTabsToSpaces(4)
+    }
+    json {
+        target 'src/**/*.json'
+        simple().indentWithSpaces(2)
+    }
+}

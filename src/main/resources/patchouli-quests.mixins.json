@@ -1,0 +1,7 @@
+{
+  "package": "me.rawdiamondmc.patchouliquests.mixin",
+  "injectors": {"defaultRequire": 1},
+  "compatibilityLevel": "JAVA_21",
+  "client": [],
+  "required": true
+}

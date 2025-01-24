@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "depends": {
+    "minecraft": "~1.21.1",
+    "fabric-api": "*",
+    "java": ">=21",
+    "fabricloader": ">=0.16.10"
+  },
+  "icon": "assets/patchouli-quests/icon.png",
+  "description": "This is an example description! Tell everyone what your mod is about!",
+  "version": "${version}",
+  "license": "MIT",
+  "environment": "*",
+  "mixins": ["patchouli-quests.mixins.json"],
+  "contact": {
+    "sources": "https://github.com/FabricMC/fabric-example-mod",
+    "homepage": "https://fabricmc.net/"
+  },
+  "name": "Patchouli Quests Fabric",
+  "entrypoints": {
+    "server": ["me.rawdiamondmc.patchouliquests.server.BetterPatchouliQuestsServer"],
+    "client": ["me.rawdiamondmc.patchouliquests.client.BetterPatchouliQuestsClient"],
+    "main": ["me.rawdiamondmc.patchouliquests.BetterPatchouliQuests"]
+  },
+  "id": "better_patchouli_quests",
+  "authors": ["RawDiamondMC"]
+}
