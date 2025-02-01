@@ -49,9 +49,9 @@ public final class BetterPatchouliQuestsClient implements ClientModInitializer {
         });
         ClientPlayNetworking.registerReceiver(S2CQuestStatusUpdatePayload.ID, (payload, context) -> {
             if (payload.add()) {
-                ClientQuestStatusManager.setCompleted(payload.quest());
+                ClientQuestStatusManager.setCompleted(payload.questId());
             } else {
-                ClientQuestStatusManager.revoke(payload.quest());
+                ClientQuestStatusManager.revoke(payload.questId());
             }
         });
     }

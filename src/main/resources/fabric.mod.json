@@ -18,7 +18,7 @@
   },
   "name": "Patchouli Quests Fabric",
   "entrypoints": {
-    "server": ["me.rawdiamondmc.patchouliquests.server.BetterPatchouliQuestsServer"],
+    "server": ["me.rawdiamondmc.patchouliquests.BetterPatchouliQuestsServer"],
     "client": ["me.rawdiamondmc.patchouliquests.client.BetterPatchouliQuestsClient"],
     "main": ["me.rawdiamondmc.patchouliquests.BetterPatchouliQuests"]
   },

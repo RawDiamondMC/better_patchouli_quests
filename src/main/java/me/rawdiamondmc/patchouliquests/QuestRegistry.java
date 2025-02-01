@@ -1,4 +1,4 @@
-package me.rawdiamondmc.patchouliquests.server;
+package me.rawdiamondmc.patchouliquests;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -13,9 +13,10 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import me.rawdiamondmc.patchouliquests.BetterPatchouliQuests;
-import me.rawdiamondmc.patchouliquests.QuestLocation;
-import me.rawdiamondmc.patchouliquests.server.condition.QuestCondition;
+import it.unimi.dsi.fastutil.Pair;
+import it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
+import me.rawdiamondmc.patchouliquests.award.QuestAward;
+import me.rawdiamondmc.patchouliquests.condition.QuestCondition;
 import org.jetbrains.annotations.Contract;
 import vazkii.patchouli.api.IVariable;
 import vazkii.patchouli.common.util.SerializationUtil;
@@ -26,11 +27,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 
 public final class QuestRegistry {
-    private static final Map<QuestLocation, QuestCondition> quests = new HashMap<>();
+    private static final Map<Identifier, Pair<QuestCondition, QuestAward>> quests = new HashMap<>();
     private static final Map<Identifier, Class<? extends QuestCondition>> conditions = new HashMap<>();
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(QuestCondition.class, new QuestConditionAdapter())
-            .registerTypeAdapter(QuestCondition[].class,new QuestConditionArrayAdapter())
+            .registerTypeAdapter(QuestCondition[].class, new QuestConditionArrayAdapter())
             .registerTypeAdapter(Identifier.class, new Identifier.Serializer())
             .registerTypeAdapter(IVariable.class, SerializationUtil.VARIABLE_SERIALIZER)
             .create();
@@ -45,30 +46,40 @@ public final class QuestRegistry {
         conditions.put(conditionId, condition);
     }
 
-    public static void registerQuest(final QuestLocation questId, final JsonObject jsonObject) {
-        final QuestCondition condition = gson.fromJson(jsonObject, QuestCondition.class);
-        quests.put(questId, condition);
+    public static void registerQuest(final Identifier questId, final JsonObject jsonObject) {
+        final QuestCondition condition = jsonObject.has("condition") ? gson.fromJson(jsonObject.getAsJsonObject("condition"), QuestCondition.class) : QuestCondition.EMPTY;
+        final QuestAward award = jsonObject.has("condition") ? gson.fromJson(jsonObject.getAsJsonObject("award"), QuestAward.class) : QuestAward.EMPTY;
+        quests.put(questId, new ObjectObjectImmutablePair<>(condition, award));
+    }
+
+    public static void clearQuests() {
+        quests.clear();
+    }
+
+    public static int questSize() {
+        return quests.size();
     }
 
     @Contract(pure = true)
-    public static boolean conditionRegistered(final Identifier QuestLocation) {
-        return conditions.containsKey(QuestLocation);
+    public static boolean conditionRegistered(final Identifier questId) {
+        return conditions.containsKey(questId);
     }
 
     @Contract(pure = true)
-    public static boolean questRegistered(final QuestLocation quest) {
-        return quests.containsKey(quest);
+    public static boolean questRegistered(final Identifier questId) {
+        return quests.containsKey(questId);
     }
 
-    public static Text getRequirementText(final QuestLocation quest, final ServerPlayerEntity player) {
-        if (!questRegistered(quest)) return Text.empty();
-        return quests.get(quest).getRequirementText(player, quest);
-    }
-
-    public static Optional<Text> check(final QuestLocation quest, final ServerPlayerEntity player) {
-        if (!questRegistered(quest))
+    public static Optional<Text> check(final Identifier questId, final ServerPlayerEntity player) {
+        if (!questRegistered(questId)) {
             return Optional.of(Text.translatable("better_patchouli_quests.error.quest_not_registered"));
-        return quests.get(quest).check(player, quest);
+        }
+        return quests.get(questId).left().check(player);
+    }
+
+    public static void award(final Identifier questId, final ServerPlayerEntity player) {
+        if (!questRegistered(questId)) return;
+        quests.get(questId).right().award(player);
     }
 
     private static final class QuestConditionAdapter implements JsonDeserializer<QuestCondition> {

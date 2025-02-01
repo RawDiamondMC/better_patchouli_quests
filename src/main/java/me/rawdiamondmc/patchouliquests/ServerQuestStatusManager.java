@@ -1,4 +1,4 @@
-package me.rawdiamondmc.patchouliquests.server;
+package me.rawdiamondmc.patchouliquests;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -6,8 +6,6 @@ import java.util.UUID;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import me.rawdiamondmc.patchouliquests.BetterPatchouliQuests;
-import me.rawdiamondmc.patchouliquests.QuestLocation;
 import org.jetbrains.annotations.Contract;
 
 import net.minecraft.nbt.NbtCompound;
@@ -16,13 +14,15 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 
 import net.fabricmc.loader.api.FabricLoader;
 
 public final class ServerQuestStatusManager {
     public static final ServerQuestStatusManager INSTANCE = new ServerQuestStatusManager();
     public final Path path = FabricLoader.getInstance().getGameDir().resolve(BetterPatchouliQuests.MOD_ID).resolve("status.nbt");
-    private final Multimap<UUID, QuestLocation> data = HashMultimap.create();
+    private final Multimap<UUID, Identifier> data = HashMultimap.create();
 
     private ServerQuestStatusManager() {
     }
@@ -51,12 +51,12 @@ public final class ServerQuestStatusManager {
             final NbtList nbtList = nbtCompound.getList(key, NbtElement.STRING_TYPE);
             for (int i = 0; i < nbtList.size(); i++) {
                 final String value = nbtList.getString(i);
-                final QuestLocation page = QuestLocation.fromString(value);
-                if (page == null) {
+                final Identifier questId = Identifier.tryParse(value);
+                if (questId == null) {
                     BetterPatchouliQuests.LOGGER.error("Failed to parse '{}' as a quest! Ignored.", value);
                     continue;
                 }
-                this.data.put(uuid, page);
+                this.data.put(uuid, questId);
             }
         }
         BetterPatchouliQuests.LOGGER.info("Data loaded from the disk.");
@@ -86,17 +86,23 @@ public final class ServerQuestStatusManager {
     }
 
     @Contract(pure = true)
-    public boolean isCompleted(final UUID uuid, final QuestLocation page) {
-        return data.containsEntry(uuid, page);
+    public boolean isCompleted(final UUID uuid, final Identifier questId) {
+        return data.containsEntry(uuid, questId);
     }
 
     @Contract(mutates = "this")
-    public boolean setCompleted(final UUID uuid, final QuestLocation page) {
-        return data.put(uuid, page);
+    public boolean setCompleted(final UUID uuid, final Identifier questId) {
+        return data.put(uuid, questId);
     }
 
     @Contract(mutates = "this")
-    public boolean revoke(final UUID uuid, final QuestLocation page) {
-        return data.remove(uuid, page);
+    public boolean complete(final ServerPlayerEntity player, final Identifier questId) {
+        QuestRegistry.award(questId, player);
+        return setCompleted(player.getUuid(), questId);
+    }
+
+    @Contract(mutates = "this")
+    public boolean revoke(final UUID uuid, final Identifier questId) {
+        return data.remove(uuid, questId);
     }
 }

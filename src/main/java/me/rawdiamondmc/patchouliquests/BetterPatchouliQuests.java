@@ -4,20 +4,20 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import me.rawdiamondmc.patchouliquests.network.packet.c2s.C2SQuestSubmissionPayload;
-import me.rawdiamondmc.patchouliquests.network.packet.c2s.C2SRequestTextPayload;
 import me.rawdiamondmc.patchouliquests.network.packet.s2c.S2CQuestStatusPayload;
 import me.rawdiamondmc.patchouliquests.network.packet.s2c.S2CQuestStatusUpdatePayload;
 import me.rawdiamondmc.patchouliquests.network.packet.s2c.S2CQuestSubmissionPayload;
-import me.rawdiamondmc.patchouliquests.network.packet.s2c.S2CQuestTextPayload;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 
 public final class BetterPatchouliQuests implements ModInitializer {
     public static final String MOD_ID = "better_patchouli_quests";
@@ -41,9 +41,8 @@ public final class BetterPatchouliQuests implements ModInitializer {
     public void onInitialize() {
         PayloadTypeRegistry.configurationS2C().register(S2CQuestStatusPayload.ID, S2CQuestStatusPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(C2SQuestSubmissionPayload.ID, C2SQuestSubmissionPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(C2SRequestTextPayload.ID, C2SRequestTextPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(S2CQuestStatusUpdatePayload.ID, S2CQuestStatusUpdatePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(S2CQuestSubmissionPayload.ID, S2CQuestSubmissionPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(S2CQuestTextPayload.ID, S2CQuestTextPayload.CODEC);
+        ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new QuestDataLoader());
     }
 }
