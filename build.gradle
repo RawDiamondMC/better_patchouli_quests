@@ -20,10 +20,6 @@ repositories {
     maven {
         url = 'https://maven.blamejared.com'
     }
-    maven {
-        url = 'http://maven.snowlyicewolf.club/'
-        allowInsecureProtocol = true
-    }
 }
 
 dependencies {
@@ -33,15 +29,13 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     modImplementation "vazkii.patchouli:Patchouli:1.21-87-FABRIC"
-    implementation "club.someoneice.json:amarok-json-for-java:1.7.3"
-    include("club.someoneice.json:amarok-json-for-java:1.7.3")
 }
 
 processResources {
-    inputs.property "version", project.version
+    inputs.property "version", version
 
     filesMatching("fabric.mod.json") {
-        expand "version": project.version
+        expand "version": version
     }
 }
 
